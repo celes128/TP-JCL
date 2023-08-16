@@ -1,0 +1,113 @@
+//API15TP6 JOB CLASS=A,MSGCLASS=H,NOTIFY=&SYSUID
+//*
+//* VI  IDCAMS (AIX)
+//*
+//* 6.  DEFINIR UN AIX (SUR LES 2 1ERS OCTETS DU CODE POSTAL)
+//*     SUR LE FICHIER USERID. ACTIF.FICH03
+//*
+//S6Q6     EXEC PGM=IDCAMS
+//SYSPRINT DD   SYSOUT=H
+//SYSIN    DD   *
+    DELETE       API15.ACTIF.FICH03.AIX
+    DELETE       API15.ACTIF.FICH03.AIX.PATH
+    SET MAXCC=0
+    DEF AIX(NAME(API15.ACTIF.FICH03.AIX) /* AIX SUR CATEGORIE */ -
+      RELATE    (API15.ACTIF.FICH03)  /* CLUSTER DE BASE   */ -
+      CISZ      (2048)                                        -
+      TRK       (1  1)                                        -
+      RECSZ     (25 67)       /* HDR + KAIX + N*6          */ -
+                              /*  5  +   2  + 10*6 = 67    */ -
+                              /* MOYENNE 3 MAX 10=> 25 67  */ -
+      KEYS      (2  44)       /* LONG CLE 2 DEPLACEMENT 44 */ -
+      FSPC      (10 20)       /* FREE CI=10% CA=20%        */ -
+      )                                                       -
+      DATA(NAME (API15.ACTIF.FICH03.AIX.DATA))                -
+      INDEX(NAME(API15.ACTIF.FICH03.AIX.INDEX))
+/*
+//*
+//* 7.  DEFINIR SON PATH
+//*
+//S6Q7     EXEC PGM=IDCAMS
+//SYSPRINT DD   SYSOUT=H
+//SYSIN    DD   *
+    DEF PATH(NAME(API15.ACTIF.FICH03.AIX.PATH)                -
+      PATHENTRY  (API15.ACTIF.FICH03))
+/*
+//*
+//* 8.  CHARGER L'AIX
+//*
+//S6Q8     EXEC PGM=IDCAMS
+//SYSPRINT DD   SYSOUT=H
+//SYSIN    DD   *
+    BIX IDS(API15.ACTIF.FICH03) ODS(API15.ACTIF.FICH03.AIX)
+/*
+//*
+//* 9.  PRINTER L'AIX.
+//*
+//S6Q9     EXEC PGM=IDCAMS
+//SYSPRINT DD   SYSOUT=H
+//SYSIN    DD   *
+        PRINT IDS(API15.ACTIF.FICH03.AIX.DATA) CHAR
+/*
+//*
+//* 10. IDEM POUR LE FICHIER ESDS : USERID. ACTIF.FICH04
+//*
+//S6Q10    EXEC PGM=IDCAMS
+//SYSPRINT DD   SYSOUT=H
+//SYSIN    DD   *
+    DELETE       API15.ACTIF.FICH04.AIX
+    DELETE       API15.ACTIF.FICH04.AIX.PATH
+    SET MAXCC=0
+    DEF AIX(NAME(API15.ACTIF.FICH04.AIX) /* AIX SUR CATEGORIE */ -
+      RELATE    (API15.ACTIF.FICH04)  /* CLUSTER DE BASE   */ -
+      CISZ      (2048)                                        -
+      TRK       (1  1)                                        -
+      RECSZ     (19 47)       /* HDR + KAIX + N*4          */ -
+                              /*  5  +   2  + 10*4 = 47    */ -
+                              /* MOYENNE 3 MAX 10=> 19 47  */ -
+      KEYS      (2  44)       /* LONG CLE 2 DEPLACEMENT 44 */ -
+      FSPC      (10 20)       /* FREE CI=10% CA=20%        */ -
+      )                                                       -
+      DATA(NAME (API15.ACTIF.FICH04.AIX.DATA))                -
+      INDEX(NAME(API15.ACTIF.FICH04.AIX.INDEX))
+    DEF PATH(NAME(API15.ACTIF.FICH04.AIX.PATH)                -
+      PATHENTRY(  API15.ACTIF.FICH04))
+    BIX IDS(API15.ACTIF.FICH04) ODS(API15.ACTIF.FICH04.AIX)
+//*
+//* 11. FAIRE UN REPRO A PARTIR D'UN FICHIER SEQUENTIEL DANS
+//*     USERID.ACTIF.FICH03 EN TESTANT LES OPTIONS :
+//*     I)   NOREUSE   REPLACE
+//*
+//S6Q11A   EXEC PGM=IDCAMS
+//ENTREE   DD   DSN=API15.SOURCE.JCL(ASSMVT),DISP=SHR
+//SYSPRINT DD   SYSOUT=H
+//SYSIN    DD   *
+    REPRO IFILE(ENTREE) ODS(API15.ACTIF.FICH03) NOREUSE   REPLACE
+/*
+//*
+//*     II)    REUSE   REPLACE
+//*
+//S6Q11B   EXEC PGM=IDCAMS
+//ENTREE   DD   DSN=API15.SOURCE.JCL(ASSMVT),DISP=SHR
+//SYSPRINT DD   SYSOUT=H
+//SYSIN    DD   *
+    REPRO IFILE(ENTREE) ODS(API15.ACTIF.FICH03)   REUSE   REPLACE
+/*
+//*
+//*     III) NOREUSE NOREPLACE
+//*
+//S6Q11C   EXEC PGM=IDCAMS
+//ENTREE   DD   DSN=API15.SOURCE.JCL(ASSMVT),DISP=SHR
+//SYSPRINT DD   SYSOUT=H
+//SYSIN    DD   *
+    REPRO IFILE(ENTREE) ODS(API15.ACTIF.FICH03) NOREUSE NOREPLACE
+/*
+//*
+//*     IV)    REUSE NOREPLACE
+//*
+//S6Q11D   EXEC PGM=IDCAMS
+//ENTREE   DD   DSN=API15.SOURCE.JCL(ASSMVT),DISP=SHR
+//SYSPRINT DD   SYSOUT=H
+//SYSIN    DD   *
+    REPRO IFILE(ENTREE) ODS(API15.ACTIF.FICH03)   REUSE NOREPLACE
+/*
